@@ -1,0 +1,18 @@
+class Player extends Thread {
+    
+    public void run() {
+        System.out.println("Player thread running");
+    }
+
+}
+
+public class CardGame {
+
+    public static void main(String[] args) {
+        System.out.println("Hello World");
+
+        Player player = new Player();
+        player.start();
+
+    }
+}
