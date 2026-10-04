@@ -23,6 +23,9 @@ class CardDeck {
     private int deckBackPointer = -1;   // Points at the last card in deckCards
     private int deckCardsLength = 0;
 
+    private int deckId = 0;
+    private static int TOTAL_DECKS = 0;
+
     public CardDeck(int totalCardCount, int[] cardValues) {
         // Make the deck able to fit all cards in at once (to prevent overflow)
         deckCards = new Card[totalCardCount];
@@ -32,6 +35,8 @@ class CardDeck {
             deckBackPointer++;
             deckCardsLength++;
         }
+
+        this.deckId = ++TOTAL_DECKS;
     }
 
     public synchronized Card drawCard() throws InterruptedException {
@@ -57,6 +62,21 @@ class CardDeck {
 
         // Notify any waiting players that the deck has a new card
         notifyAll();
+    }
+
+    private void addLog(String message) {
+
+        String logFileName = "deck" + deckId + "_output.txt";
+
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter(logFileName));
+            writer.write(message);
+            writer.newLine();
+            writer.close();
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+        }
+
     }
 }
 
@@ -155,6 +175,21 @@ class Player extends Thread {
         hasWon = true;
 
         CardGame.announceWinner(this.playerId);
+    }
+
+    private void addLog(String message) {
+
+        String logFileName = "player" + playerId + "_output.txt";
+
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter(logFileName));
+            writer.write(message);
+            writer.newLine();
+            writer.close();
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+        }
+
     }
     
 }
