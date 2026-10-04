@@ -56,7 +56,8 @@ class Player extends Thread {
 
     private CardDeck drawDeck;
     private CardDeck discardDeck;
-
+    
+    private boolean hasWon = false;
     private int playerId = 0;
     private static int TOTAL_PLAYERS = 0;
 
@@ -78,6 +79,7 @@ class Player extends Thread {
         this.discardDeck = discardDeck;
 
         this.playerId = ++TOTAL_PLAYERS;
+        this.checkIfWon();
     }
 
     public void run() {
@@ -123,7 +125,24 @@ class Player extends Thread {
         }
 
         // Check if player has won
+        this.checkIfWon();
     }
+    
+    private void checkIfWon(){
+        //Scan Hand if all cards are the same value, starting from the card in index 0
+        int checkValue = this.heldCards[0].getValue();
+        
+        for (int i = 0; i < 4; i++) {
+            if (checkValue != this.heldCards[i].getValue())
+                hasWon = false;
+                return;
+        };
+        
+        // Should go here if all cards are the same.
+        hasWon = true;
+        return;
+    }
+    
 }
 
 public class CardGame {
