@@ -1,6 +1,11 @@
+import java.io.*;
+
+import java.util.InputMismatchException;
+import java.util.Scanner;
+import java.util.Random;
 
 class Card {
-    private int cardValue;
+    private final int cardValue;
 
     public Card(int cardValue) {
         this.cardValue = cardValue;
@@ -13,8 +18,10 @@ class Card {
 
 class CardDeck {
     private Card[] deckCards;
+
     private int deckFrontPointer = 0;   // Points at the first card in deckCards
     private int deckBackPointer = -1;   // Points at the last card in deckCards
+    private int deckCardsLength = 0;
 
     public CardDeck(int totalCardCount, int[] cardValues) {
         // Make the deck able to fit all cards in at once (to prevent overflow)
@@ -23,31 +30,33 @@ class CardDeck {
         for (int i = 0; i < cardValues.length; i++) {
             deckCards[i] = new Card(cardValues[i]);
             deckBackPointer++;
+            deckCardsLength++;
         }
     }
 
-    public CardDeck(int totalCardCount) {
-        // Make the deck able to fit all cards in at once (to prevent overflow)
-        deckCards = new Card[totalCardCount];
-    }
-
-    public synchronized Card drawCard() {
+    public synchronized Card drawCard() throws InterruptedException {
+        // Wait until the deck has cards to draw
+        while (deckCardsLength <= 0) wait();
+        
         // Get the current front card
         Card frontCard = deckCards[deckFrontPointer];
+        deckCards[deckFrontPointer] = null;
 
-        deckFrontPointer++;
-        if (deckFrontPointer >= deckCards.length) deckFrontPointer = 0;
+        deckFrontPointer = (deckFrontPointer + 1) % deckCards.length;
+        deckCardsLength--;
 
         // Return the front card
         return frontCard;
     }
 
     public synchronized void addCard(Card card) {
-        deckBackPointer++;
-        if (deckBackPointer >= deckCards.length) deckBackPointer = 0;
-
         // Add the card to the back of the deck
+        deckBackPointer = (deckBackPointer + 1) % deckCards.length;
         deckCards[deckBackPointer] = card;
+        deckCardsLength++;
+
+        // Notify any waiting players that the deck has a new card
+        notifyAll();
     }
 }
 
@@ -58,15 +67,9 @@ class Player extends Thread {
     private CardDeck discardDeck;
     
     private boolean hasWon = false;
+
     private int playerId = 0;
     private static int TOTAL_PLAYERS = 0;
-
-    public Player(CardDeck drawDeck, CardDeck discardDeck) {
-        this.drawDeck = drawDeck;
-        this.discardDeck = discardDeck;
-
-        this.playerId = ++TOTAL_PLAYERS;
-    }
     
     public Player(int[] heldCardValues, CardDeck drawDeck, CardDeck discardDeck) {
         if (heldCardValues.length != 4) return;
@@ -79,6 +82,7 @@ class Player extends Thread {
         this.discardDeck = discardDeck;
 
         this.playerId = ++TOTAL_PLAYERS;
+        
         this.checkIfWon();
     }
 
@@ -89,40 +93,48 @@ class Player extends Thread {
     }
 
     public void setDrawDeck(CardDeck deck) {
-        this.drawDeck = deck;
+        drawDeck = deck;
     }
 
     public void setDiscardDeck(CardDeck deck) {
-        this.discardDeck = deck;
+        discardDeck = deck;
     }
 
     public void setCard(Card newCard, int handIndex) {
-        this.heldCards[handIndex] = newCard;
+        heldCards[handIndex] = newCard;
     }
 
     public void setCard(int cardValue, int handIndex) {
-        this.heldCards[handIndex] = new Card(cardValue);
-    }
-
-    private void replaceHeldCard(Card newCard, int replaceIndex) {
-        // Add the card to the discard deck
-        this.discardDeck.addCard(heldCards[replaceIndex]);
-
-        // Replace the card in the player's hand
-        this.heldCards[replaceIndex] = newCard;
+        heldCards[handIndex] = new Card(cardValue);
     }
 
     private void takeTurn() {
         // Draw the next card
-        Card drawCard = this.drawDeck.drawCard();
+        Card drawCard = null;
+        
+        while (drawCard == null) {
+            try {
+                drawCard = this.drawDeck.drawCard();
+            } catch (InterruptedException e) {
+                // Interrupt occured during wait so retry turn
+                return;
+            }
+        }
 
         // Pick random card to discard
-        int randomCard = 0;
+        Random rand = new Random();
+        int randomCard = rand.nextInt(4);
 
         // Prevent player from discarding preffered cards
-        if (this.heldCards[randomCard].getValue() != this.playerId) {
-            replaceHeldCard(drawCard, randomCard);
+        while (heldCards[randomCard].getValue() == this.playerId) {
+            randomCard = rand.nextInt(4);
         }
+
+        // Add the card to the discard deck
+        discardDeck.addCard(heldCards[randomCard]);
+
+        // Replace the card in the player's hand
+        heldCards[randomCard] = drawCard;
 
         // Check if player has won
         this.checkIfWon();
@@ -148,20 +160,130 @@ class Player extends Thread {
 
 public class CardGame {
 
+    private static Player[] PLAYERS;
+    private static CardDeck[] CARD_DECKS;
+
     public static void main(String[] args) {
-        System.out.println("Hello!");
+        
+        Scanner scanner = new Scanner(System.in);
 
-        final int TOTAL_CARDS = 20;
+        boolean isValidInput = false;
+        int playerCount = 0;
 
-        CardDeck deck1 = new CardDeck(TOTAL_CARDS);
-        CardDeck deck2 = new CardDeck(TOTAL_CARDS);
+        while (!isValidInput) {
+            isValidInput = true;
 
-        Player player = new Player(deck1, deck2);
-        player.setCard(2, 0);
-        player.setCard(2, 1);
-        player.setCard(2, 2);
-        player.setCard(2, 3);
+            try {
+                System.out.println("Please enter the number of players:");
+                playerCount = scanner.nextInt();
 
-        player.start();
+                if (playerCount <= 0) {
+                    System.out.println("Number of players should be 1 or greater");
+                    isValidInput = false;
+                    continue;
+                }
+
+            } catch (InputMismatchException e) {
+                System.out.println("ERROR: Number of players entered was not in the correct format, please try again");
+                isValidInput = false;
+            }
+        }
+
+        final int TOTAL_CARDS = 8 * playerCount;
+
+        isValidInput = false;
+        int[] cardValues = new int[0];
+
+        while (!isValidInput) {
+            isValidInput = true;
+
+            try {
+                System.out.println("Please enter the location of a pack to load:");
+                String packLocation = scanner.next();
+
+                // Check the pack is valid
+                cardValues = readPack(packLocation);
+                if (cardValues == null) {
+                    isValidInput = false;
+                    continue;
+                }
+
+                if (cardValues.length != TOTAL_CARDS) {
+                    System.out.println("ERROR: Pack has incorrect number of cards, needs to have exactly " + TOTAL_CARDS);
+                    isValidInput = false;
+                    continue;
+                }
+
+            } catch (InputMismatchException e) {
+                System.out.println("ERROR: Pack location entered was not in the correct format, please try again");
+                isValidInput = false;
+            }
+        }
+
+        scanner.close();
+
+        // Create the decks
+        CARD_DECKS = new CardDeck[playerCount];
+
+        int deckCardsStart = cardValues.length / 2; // First half are player cards, second half is deck cards
+
+        for (int i = 0; i < playerCount; i++) {
+            int card1 = cardValues[deckCardsStart + (i*4)];
+            int card2 = cardValues[deckCardsStart + (i*4) + 1];
+            int card3 = cardValues[deckCardsStart + (i*4) + 2];
+            int card4 = cardValues[deckCardsStart + (i*4) + 3];
+
+            int[] deckCards = new int[]{card1, card2, card3, card4};
+            CARD_DECKS[i] = new CardDeck(TOTAL_CARDS, deckCards);
+        }
+
+        // Create the players
+        PLAYERS = new Player[playerCount];
+
+        for (int i = 0; i < playerCount; i++) {
+            int card1 = cardValues[(i*4)];
+            int card2 = cardValues[(i*4) + 1];
+            int card3 = cardValues[(i*4) + 2];
+            int card4 = cardValues[(i*4) + 3];
+
+            int[] playerHand = new int[]{card1, card2, card3, card4};
+            // Player picks up from same deck number as their number and discards to the next deck
+            PLAYERS[i] = new Player(playerHand, CARD_DECKS[i], CARD_DECKS[(i + 1) % playerCount]);
+        }
+
+        // Start the player threads
+        for (Player p : PLAYERS) {
+            p.start();
+        }
+    }
+
+    private static int[] readPack(String packLocation) {
+
+        String packContents = "";
+
+        // Read the given pack file
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(packLocation));
+            packContents = reader.readAllAsString();
+            reader.close();
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+            return null;
+        }
+
+        // Convert the contents of the pack file into an array of card values
+        String[] cardValuesStr = packContents.split("\n");
+        int[] cardValues = new int[cardValuesStr.length];
+
+        try {
+            for (int i = 0; i < cardValuesStr.length; i++) {
+                cardValues[i] = Integer.parseInt(cardValuesStr[i].trim());
+            }
+        } catch (NumberFormatException e) {
+            System.out.println("ERROR: File contains non-integer values");
+            return null;
+        }
+
+        return cardValues;
     }
 }
