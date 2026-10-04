@@ -153,7 +153,8 @@ class Player extends Thread {
         
         // Should go here if all cards are the same.
         hasWon = true;
-        return;
+
+        CardGame.announceWinner(this.playerId);
     }
     
 }
@@ -162,6 +163,8 @@ public class CardGame {
 
     private static Player[] PLAYERS;
     private static CardDeck[] CARD_DECKS;
+
+    private static boolean gameFinished = false;
 
     public static void main(String[] args) {
         
@@ -255,6 +258,14 @@ public class CardGame {
         for (Player p : PLAYERS) {
             p.start();
         }
+    }
+
+    public static synchronized void announceWinner(int playerId) {
+        // Only allow 1 player to announce themselves as a winner
+        if (gameFinished) return;
+        gameFinished = true;
+
+        // Stop all other player threads
     }
 
     private static int[] readPack(String packLocation) {
