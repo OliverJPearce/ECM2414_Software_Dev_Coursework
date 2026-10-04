@@ -133,9 +133,10 @@ class Player extends Thread {
         int checkValue = this.heldCards[0].getValue();
         
         for (int i = 0; i < 4; i++) {
-            if (checkValue != this.heldCards[i].getValue())
+            if (checkValue != this.heldCards[i].getValue()) {
                 hasWon = false;
                 return;
+            }
         };
         
         // Should go here if all cards are the same.
