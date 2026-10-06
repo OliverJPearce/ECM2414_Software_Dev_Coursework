@@ -16,6 +16,8 @@ class Card {
 }
 
 class CardDeck {
+    private boolean gameOver = false;
+
     private Card[] deckCards;
 
     private int deckFrontPointer = 0;   // Points at the first card in deckCards
@@ -40,7 +42,10 @@ class CardDeck {
 
     public synchronized Card drawCard() throws InterruptedException {
         // Wait until the deck has cards to draw
-        while (deckCardsLength <= 0) wait();
+        while (deckCardsLength <= 0 && !gameOver) wait();
+
+        // If the game is over then return
+        if (gameOver) return null;
         
         // Get the current front card
         Card frontCard = deckCards[deckFrontPointer];
@@ -60,6 +65,11 @@ class CardDeck {
         deckCardsLength++;
 
         // Notify any waiting players that the deck has a new card
+        notifyAll();
+    }
+
+    public synchronized void endGame() {
+        gameOver = true;
         notifyAll();
     }
 
@@ -85,7 +95,7 @@ class Player extends Thread {
     private CardDeck drawDeck;
     private CardDeck discardDeck;
     
-    private boolean hasWon = false;
+    private boolean done = false;
 
     private int playerId = 0;
     private static int TOTAL_PLAYERS = 0;
@@ -106,9 +116,9 @@ class Player extends Thread {
     }
 
     public void run() {
-        System.out.println("Player thread running");
+        while (!done) takeTurn();
 
-        takeTurn();
+        System.out.println("Player " + playerId + " thread ended");
     }
 
     public void setDrawDeck(CardDeck deck) {
@@ -136,8 +146,10 @@ class Player extends Thread {
                 drawCard = this.drawDeck.drawCard();
             } catch (InterruptedException e) {
                 // Interrupt occured during wait so retry turn
-                return;
             }
+
+            // Check the game is still running
+            if (done) return;
         }
 
         // Pick random card to discard
@@ -165,21 +177,23 @@ class Player extends Thread {
 
         for (int i = 0; i < 4; i++) {
             if (checkValue != this.heldCards[i].getValue()) {
-                hasWon = false;
                 return;
             }
         };
         
         // Should go here if all cards are the same.
-        hasWon = true;
-
         CardGame.announceWinner(this.playerId);
+
+        done = true;
+    }
+
+    public void stopPlayer(int winnerId) {
+        done = true;
     }
 
     private void addLog(String message) {
 
         String logFileName = "player" + playerId + "_output.txt";
-
 
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(logFileName));
@@ -303,6 +317,14 @@ public class CardGame {
         System.out.println("Player " + playerId + " has won the game!");
 
         // Stop all other player threads
+        for (Player p : PLAYERS) {
+            p.stopPlayer(playerId);
+        }
+
+        // Prevent players being locked waiting for cards
+        for (CardDeck d : CARD_DECKS) {
+            d.endGame();
+        }
     }
 
     private static int[] readPack(String packLocation) {
