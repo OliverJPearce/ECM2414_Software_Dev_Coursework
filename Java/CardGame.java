@@ -1,8 +1,7 @@
 import java.io.*;
-
 import java.util.InputMismatchException;
-import java.util.Scanner;
 import java.util.Random;
+import java.util.Scanner;
 
 class Card {
     private final int cardValue;
@@ -163,7 +162,7 @@ class Player extends Thread {
     private void checkIfWon(){
         //Scan Hand if all cards are the same value, starting from the card in index 0
         int checkValue = this.heldCards[0].getValue();
-        
+
         for (int i = 0; i < 4; i++) {
             if (checkValue != this.heldCards[i].getValue()) {
                 hasWon = false;
@@ -180,6 +179,7 @@ class Player extends Thread {
     private void addLog(String message) {
 
         String logFileName = "player" + playerId + "_output.txt";
+
 
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(logFileName));
@@ -266,10 +266,10 @@ public class CardGame {
         int deckCardsStart = cardValues.length / 2; // First half are player cards, second half is deck cards
 
         for (int i = 0; i < playerCount; i++) {
-            int card1 = cardValues[deckCardsStart + (i*4)];
-            int card2 = cardValues[deckCardsStart + (i*4) + 1];
-            int card3 = cardValues[deckCardsStart + (i*4) + 2];
-            int card4 = cardValues[deckCardsStart + (i*4) + 3];
+            int card1 = cardValues[deckCardsStart + (0*playerCount) + i];
+            int card2 = cardValues[deckCardsStart + (1*playerCount) + i];
+            int card3 = cardValues[deckCardsStart + (2*playerCount) + i];
+            int card4 = cardValues[deckCardsStart + (3*playerCount) + i];
 
             int[] deckCards = new int[]{card1, card2, card3, card4};
             CARD_DECKS[i] = new CardDeck(TOTAL_CARDS, deckCards);
@@ -279,10 +279,10 @@ public class CardGame {
         PLAYERS = new Player[playerCount];
 
         for (int i = 0; i < playerCount; i++) {
-            int card1 = cardValues[(i*4)];
-            int card2 = cardValues[(i*4) + 1];
-            int card3 = cardValues[(i*4) + 2];
-            int card4 = cardValues[(i*4) + 3];
+            int card1 = cardValues[(0*playerCount) + i];
+            int card2 = cardValues[(1*playerCount) + i];
+            int card3 = cardValues[(2*playerCount) + i];
+            int card4 = cardValues[(3*playerCount) + i];
 
             int[] playerHand = new int[]{card1, card2, card3, card4};
             // Player picks up from same deck number as their number and discards to the next deck
@@ -299,6 +299,8 @@ public class CardGame {
         // Only allow 1 player to announce themselves as a winner
         if (gameFinished) return;
         gameFinished = true;
+
+        System.out.println("Player " + playerId + " has won the game!");
 
         // Stop all other player threads
     }
