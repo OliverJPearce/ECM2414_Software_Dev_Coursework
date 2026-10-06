@@ -111,14 +111,19 @@ class Player extends Thread {
         this.discardDeck = discardDeck;
 
         this.playerId = ++TOTAL_PLAYERS;
-        
-        this.checkIfWon();
     }
 
     public void run() {
-        while (!done) takeTurn();
+        // Check if the player has a winning hand
+        this.checkIfWon();
 
+        // Run the game loop
+        while (!done) takeTurn();
         System.out.println("Player " + playerId + " thread ended");
+    }
+
+    public int getPlayerId() {
+        return playerId;
     }
 
     public void setDrawDeck(CardDeck deck) {
