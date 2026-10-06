@@ -40,6 +40,10 @@ class CardDeck {
         this.deckId = ++TOTAL_DECKS;
     }
 
+    public Card getCard(int deckIndex) {
+        return deckCards[(deckFrontPointer + deckIndex) % deckCards.length];
+    }
+
     public synchronized Card drawCard() throws InterruptedException {
         // Wait until the deck has cards to draw
         while (deckCardsLength <= 0 && !gameOver) wait();
@@ -140,6 +144,10 @@ class Player extends Thread {
 
     public void setCard(int cardValue, int handIndex) {
         heldCards[handIndex] = new Card(cardValue);
+    }
+
+    public Card getCard(int handIndex) {
+        return heldCards[handIndex];
     }
 
     private void takeTurn() {
@@ -279,6 +287,16 @@ public class CardGame {
 
         scanner.close();
 
+        // Create and distribute the cards among the players and decks
+        distributeCards(cardValues, playerCount, TOTAL_CARDS);
+
+        // Start the player threads
+        for (Player p : PLAYERS) {
+            p.start();
+        }
+    }
+
+    public static void distributeCards(int[] cardValues, int playerCount, final int TOTAL_CARDS) {
         // Create the decks
         CARD_DECKS = new CardDeck[playerCount];
 
@@ -306,11 +324,6 @@ public class CardGame {
             int[] playerHand = new int[]{card1, card2, card3, card4};
             // Player picks up from same deck number as their number and discards to the next deck
             PLAYERS[i] = new Player(playerHand, CARD_DECKS[i], CARD_DECKS[(i + 1) % playerCount]);
-        }
-
-        // Start the player threads
-        for (Player p : PLAYERS) {
-            p.start();
         }
     }
 
@@ -360,5 +373,13 @@ public class CardGame {
         }
 
         return cardValues;
+    }
+
+    public static Player[] getPlayers() {
+        return PLAYERS;
+    }
+
+    public static CardDeck[] getDecks() {
+        return CARD_DECKS;
     }
 }
