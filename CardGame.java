@@ -40,8 +40,16 @@ class CardDeck {
         this.deckId = ++TOTAL_DECKS;
     }
 
+    public static void resetCounter() {
+        TOTAL_DECKS = 0;
+    }
+
     public Card getCard(int deckIndex) {
         return deckCards[(deckFrontPointer + deckIndex) % deckCards.length];
+    }
+
+    public int getDeckSize() {
+        return deckCardsLength;
     }
 
     public synchronized Card drawCard() throws InterruptedException {
@@ -124,6 +132,10 @@ class Player extends Thread {
         // Run the game loop
         while (!done) takeTurn();
         System.out.println("Player " + playerId + " thread ended");
+    }
+
+    public static void resetCounter() {
+        TOTAL_PLAYERS = 0;
     }
 
     public int getPlayerId() {
@@ -290,6 +302,11 @@ public class CardGame {
         // Create and distribute the cards among the players and decks
         distributeCards(cardValues, playerCount, TOTAL_CARDS);
 
+        // Start the game
+        startGame();
+    }
+
+    public static void startGame() {
         // Start the player threads
         for (Player p : PLAYERS) {
             p.start();
@@ -299,6 +316,7 @@ public class CardGame {
     public static void distributeCards(int[] cardValues, int playerCount, final int TOTAL_CARDS) {
         // Create the decks
         CARD_DECKS = new CardDeck[playerCount];
+        CardDeck.resetCounter();
 
         int deckCardsStart = cardValues.length / 2; // First half are player cards, second half is deck cards
 
@@ -314,6 +332,7 @@ public class CardGame {
 
         // Create the players
         PLAYERS = new Player[playerCount];
+        Player.resetCounter();
 
         for (int i = 0; i < playerCount; i++) {
             int card1 = cardValues[(0*playerCount) + i];
@@ -381,5 +400,9 @@ public class CardGame {
 
     public static CardDeck[] getDecks() {
         return CARD_DECKS;
+    }
+
+    public static boolean isGameFinished() {
+        return gameFinished;
     }
 }
