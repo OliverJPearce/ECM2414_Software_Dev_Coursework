@@ -1,6 +1,6 @@
 ## Compiling and Running The Tests
 
-JUnit 6.1.3
+JUnit 4.13.2
 
 To run tests first run:
 ```bash

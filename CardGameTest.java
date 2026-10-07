@@ -92,6 +92,16 @@ class CardGameTest {
 	}
 
 	@Test
+	void cardDeckDrawCardCheck() {
+		assertEquals(1, 2);
+	}
+
+	@Test
+	void cardDeckDiscardCardCheck() {
+		assertEquals(1, 2);
+	}
+
+	@Test
 	@Timeout(5)	// Prevent the test from running forever, so fail after 5 seconds of the game running
 	void winningPlayerEndingHandCheck() {
 		// Setup means player 2 should discard all the 1s allowing player 1 to win
