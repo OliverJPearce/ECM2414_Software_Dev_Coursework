@@ -13,7 +13,7 @@ class CardGameTest {
 		Player[] players = CardGame.getPlayers();
 
 		// Check that there are 2 players
-		assertEquals(players.length, 2);
+		assertEquals(2, players.length);
 	}
 
 	@Test
@@ -25,10 +25,10 @@ class CardGameTest {
 		CardDeck[] cardDecks = CardGame.getDecks();
 
 		// Check that there are 2 decks each with 4 cards
-		assertEquals(cardDecks.length, 2);
+		assertEquals(2, cardDecks.length);
 
-		assertEquals(cardDecks[0].getDeckSize(), 4);
-		assertEquals(cardDecks[1].getDeckSize(), 4);
+		assertEquals(4, cardDecks[0].getDeckSize());
+		assertEquals(4, cardDecks[1].getDeckSize());
 	}
 
 	@Test
@@ -50,15 +50,15 @@ class CardGameTest {
 		CardGame.distributeCards(cardValues, 2, 16);
 		Player[] players = CardGame.getPlayers();
 
-		assertEquals(players[0].getCard(0).getValue(), 1);
-		assertEquals(players[0].getCard(1).getValue(), 2);
-		assertEquals(players[0].getCard(2).getValue(), 3);
-		assertEquals(players[0].getCard(3).getValue(), 4);
+		assertEquals(1, players[0].getCard(0).getValue());
+		assertEquals(2, players[0].getCard(1).getValue());
+		assertEquals(3, players[0].getCard(2).getValue());
+		assertEquals(4, players[0].getCard(3).getValue());
 		
-		assertEquals(players[1].getCard(0).getValue(), 5);
-		assertEquals(players[1].getCard(1).getValue(), 6);
-		assertEquals(players[1].getCard(2).getValue(), 7);
-		assertEquals(players[1].getCard(3).getValue(), 8);
+		assertEquals(5, players[1].getCard(0).getValue());
+		assertEquals(6, players[1].getCard(1).getValue());
+		assertEquals(7, players[1].getCard(2).getValue());
+		assertEquals(8, players[1].getCard(3).getValue());
 	}
 
 	@Test
@@ -80,25 +80,50 @@ class CardGameTest {
 		CardGame.distributeCards(cardValues, 2, 16);
 		CardDeck[] cardDecks = CardGame.getDecks();
 		
-		assertEquals(cardDecks[0].getCard(0).getValue(), 9);
-		assertEquals(cardDecks[0].getCard(1).getValue(), 10);
-		assertEquals(cardDecks[0].getCard(2).getValue(), 11);
-		assertEquals(cardDecks[0].getCard(3).getValue(), 12);
+		assertEquals(9, cardDecks[0].getCard(0).getValue());
+		assertEquals(10, cardDecks[0].getCard(1).getValue());
+		assertEquals(11, cardDecks[0].getCard(2).getValue());
+		assertEquals(12, cardDecks[0].getCard(3).getValue());
 		
-		assertEquals(cardDecks[1].getCard(0).getValue(), 13);
-		assertEquals(cardDecks[1].getCard(1).getValue(), 14);
-		assertEquals(cardDecks[1].getCard(2).getValue(), 15);
-		assertEquals(cardDecks[1].getCard(3).getValue(), 16);
+		assertEquals(13, cardDecks[1].getCard(0).getValue());
+		assertEquals(14, cardDecks[1].getCard(1).getValue());
+		assertEquals(15, cardDecks[1].getCard(2).getValue());
+		assertEquals(16, cardDecks[1].getCard(3).getValue());
 	}
 
 	@Test
 	void cardDeckDrawCardCheck() {
-		assertEquals(1, 2);
+		int[] cardValues = new int[]{1,2,3,4};
+		CardDeck cardDeck = new CardDeck(10, cardValues);
+
+		assertEquals(4, cardDeck.getDeckSize());
+
+		Card drawnCard = new Card(0);
+
+		try {
+			drawnCard = cardDeck.drawCard();
+
+			assertEquals(1, drawnCard.getValue());
+			assertEquals(3, cardDeck.getDeckSize());
+
+		} catch (InterruptedException e) {
+			System.out.println("TEST cardDeckDrawCardCheck: Card draw interrupted");
+			assertEquals(1, 2);	// Fail the test since drawCard was interrupted
+		}
 	}
 
 	@Test
 	void cardDeckDiscardCardCheck() {
-		assertEquals(1, 2);
+		int[] cardValues = new int[]{1,2,3,4};
+		CardDeck cardDeck = new CardDeck(10, cardValues);
+
+		assertEquals(4, cardDeck.getDeckSize());
+
+		Card discardCard = new Card(5);
+		cardDeck.addCard(discardCard);
+
+		assertEquals(5, cardDeck.getCard(4).getValue());
+		assertEquals(5, cardDeck.getDeckSize());
 	}
 
 	@Test
@@ -136,10 +161,10 @@ class CardGameTest {
 		// Check that player 1 has a whole hand of 1s
 		Player[] players = CardGame.getPlayers();
 
-		assertEquals(players[0].getCard(0).getValue(), 1);
-		assertEquals(players[0].getCard(1).getValue(), 1);
-		assertEquals(players[0].getCard(2).getValue(), 1);
-		assertEquals(players[0].getCard(3).getValue(), 1);
+		assertEquals(1, players[0].getCard(0).getValue());
+		assertEquals(1, players[0].getCard(1).getValue());
+		assertEquals(1, players[0].getCard(2).getValue());
+		assertEquals(1, players[0].getCard(3).getValue());
 	}
 
 	@Test
@@ -177,7 +202,7 @@ class CardGameTest {
 		CardDeck[] cardDecks = CardGame.getDecks();
 		int totalCards = cardDecks[0].getDeckSize() + cardDecks[1].getDeckSize() + 4 + 4;
 
-		assertEquals(totalCards, 16);
+		assertEquals(16, totalCards);
 	}
 	
 }
