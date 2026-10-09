@@ -107,7 +107,7 @@ class Player extends Thread {
     private CardDeck drawDeck;
     private CardDeck discardDeck;
     
-    private boolean done = false;
+    private volatile boolean done = false;
 
     private int playerId = 0;
     private static int TOTAL_PLAYERS = 0;
@@ -238,7 +238,7 @@ public class CardGame {
     private static Player[] PLAYERS;
     private static CardDeck[] CARD_DECKS;
 
-    private static boolean gameFinished = false;
+    private static volatile boolean gameFinished = false;
 
     public static void main(String[] args) {
         
@@ -307,6 +307,8 @@ public class CardGame {
     }
 
     public static void startGame() {
+        gameFinished = false;
+
         // Start the player threads
         for (Player p : PLAYERS) {
             p.start();
