@@ -1,4 +1,5 @@
 import java.io.*;
+import java.nio.file.*;
 import java.util.InputMismatchException;
 import java.util.Random;
 import java.util.Scanner;
@@ -83,21 +84,40 @@ class CardDeck {
     public synchronized void endGame() {
         gameOver = true;
         notifyAll();
+
+        String contents = "deck" + deckId + " contents: ";
+
+        for (int i = 0; i < deckCardsLength; i++) {
+            contents += this.getCard(i).getValue() + " ";
+        }
+
+        this.addLog(contents);
     }
 
     private void addLog(String message) {
-
-        String logFileName = "deck" + deckId + "_output.txt";
-
-        try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter(logFileName));
-            writer.write(message);
-            writer.newLine();
-            writer.close();
-        } catch (IOException e) {
+        
+        // Aqcuires the DeckOutputs directory 
+        Path logDir = Paths.get("DeckOutputs"); 
+        
+        try{
+            // Creates the DeckOutputs directory if it does not exist
+            Files.createDirectories(logDir);
+        } catch (Exception e) {
             System.out.println(e.getMessage());
         }
 
+        String logFileName = "deck" + deckId + "_output.txt";
+
+        File logFile = new File(logDir.toFile(), logFileName);
+
+
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(logFile))){
+            writer.write(message);
+            writer.newLine();
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+        }
+        
     }
 }
 
@@ -111,7 +131,8 @@ class Player extends Thread {
 
     private int playerId = 0;
     private static int TOTAL_PLAYERS = 0;
-    
+
+
     public Player(int[] heldCardValues, CardDeck drawDeck, CardDeck discardDeck) {
         if (heldCardValues.length != 4) return;
 
@@ -123,6 +144,8 @@ class Player extends Thread {
         this.discardDeck = discardDeck;
 
         this.playerId = ++TOTAL_PLAYERS;
+        this.clearLog();
+
     }
 
     public void run() {
@@ -177,6 +200,9 @@ class Player extends Thread {
             if (done) return;
         }
 
+        String drawmessage = "Player " + playerId + " draws a " + drawCard.getValue();
+        this.addLog(drawmessage);
+
         // Pick random card to discard
         Random rand = new Random();
         int randomCard = rand.nextInt(4);
@@ -185,6 +211,9 @@ class Player extends Thread {
         while (heldCards[randomCard].getValue() == this.playerId) {
             randomCard = rand.nextInt(4);
         }
+
+        String discardmessage = "Player " + playerId + " discards a " + heldCards[randomCard].getValue();
+        this.addLog(discardmessage);
 
         // Add the card to the discard deck
         discardDeck.addCard(heldCards[randomCard]);
@@ -195,6 +224,18 @@ class Player extends Thread {
         // Check if player has won
         this.checkIfWon();
     }
+
+    private void clearLog(){
+        String logFileName = "player" + playerId + "_output.txt";
+
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(logFileName, false))){ 
+            writer.write("");
+            System.out.println("Player " + playerId + " log cleared");
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+        }
+
+    }
     
     private void checkIfWon(){
         //Scan Hand if all cards are the same value, starting from the card in index 0
@@ -204,8 +245,8 @@ class Player extends Thread {
             if (checkValue != this.heldCards[i].getValue()) {
                 return;
             }
-        };
-        
+        }
+
         // Should go here if all cards are the same.
         CardGame.announceWinner(this.playerId);
 
@@ -220,11 +261,13 @@ class Player extends Thread {
 
         String logFileName = "player" + playerId + "_output.txt";
 
-        try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter(logFileName));
+        System.out.println(new File(logFileName).getAbsolutePath());
+
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(logFileName, true))){ 
             writer.write(message);
             writer.newLine();
-            writer.close();
+            writer.newLine();
+            System.out.println("Player " + playerId + " log written to " + logFileName);
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }
