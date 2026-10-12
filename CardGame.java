@@ -230,7 +230,6 @@ class Player extends Thread {
 
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(logFileName, false))){ 
             writer.write("");
-            System.out.println("Player " + playerId + " log cleared");
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }
@@ -261,13 +260,10 @@ class Player extends Thread {
 
         String logFileName = "player" + playerId + "_output.txt";
 
-        System.out.println(new File(logFileName).getAbsolutePath());
-
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(logFileName, true))){ 
             writer.write(message);
             writer.newLine();
             writer.newLine();
-            System.out.println("Player " + playerId + " log written to " + logFileName);
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }

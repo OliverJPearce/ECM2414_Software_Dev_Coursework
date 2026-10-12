@@ -1,0 +1,68 @@
+Player 3 draws a 111
+
+Player 3 discards a 15
+
+Player 3 draws a 11
+
+Player 3 discards a 111
+
+Player 3 draws a 65
+
+Player 3 discards a 11
+
+Player 3 draws a 1
+
+Player 3 discards a 65
+
+Player 3 draws a 3
+
+Player 3 discards a 7
+
+Player 3 draws a 90
+
+Player 3 discards a 1
+
+Player 3 draws a 51
+
+Player 3 discards a 65
+
+Player 3 draws a 13
+
+Player 3 discards a 11
+
+Player 3 draws a 3
+
+Player 3 discards a 51
+
+Player 3 draws a 10
+
+Player 3 discards a 90
+
+Player 3 draws a 33
+
+Player 3 discards a 13
+
+Player 3 draws a 5
+
+Player 3 discards a 33
+
+Player 3 draws a 14
+
+Player 3 discards a 10
+
+Player 3 draws a 11
+
+Player 3 discards a 5
+
+Player 3 draws a 7
+
+Player 3 discards a 14
+
+Player 3 draws a 15
+
+Player 3 discards a 11
+
+Player 3 draws a 17
+
+Player 3 discards a 15
+

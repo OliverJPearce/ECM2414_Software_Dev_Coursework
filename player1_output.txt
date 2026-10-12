@@ -1,0 +1,64 @@
+Player 1 draws a 8
+
+Player 1 discards a 5
+
+Player 1 draws a 11
+
+Player 1 discards a 14
+
+Player 1 draws a 91
+
+Player 1 discards a 8
+
+Player 1 draws a 1
+
+Player 1 discards a 11
+
+Player 1 draws a 7
+
+Player 1 discards a 15
+
+Player 1 draws a 1
+
+Player 1 discards a 7
+
+Player 1 draws a 6
+
+Player 1 discards a 17
+
+Player 1 draws a 108
+
+Player 1 discards a 91
+
+Player 1 draws a 3
+
+Player 1 discards a 6
+
+Player 1 draws a 15
+
+Player 1 discards a 3
+
+Player 1 draws a 73
+
+Player 1 discards a 108
+
+Player 1 draws a 111
+
+Player 1 discards a 15
+
+Player 1 draws a 1
+
+Player 1 discards a 73
+
+Player 1 draws a 7
+
+Player 1 discards a 111
+
+Player 1 draws a 11
+
+Player 1 discards a 7
+
+Player 1 draws a 1
+
+Player 1 discards a 11
+
