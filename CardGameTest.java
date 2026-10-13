@@ -2,15 +2,13 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
+
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 
 class CardGameTest {
 
@@ -176,6 +174,19 @@ class CardGameTest {
 	}
 
 	@Test
+	void invalidInputCheck() {
+		int[] noCardValues = CardGame.readPack("invalid_location.txt");
+		assertEquals(null, noCardValues, "Card values should be null since the pack invalid_location.txt doesn't exist");
+
+		int[] cardValues = CardGame.readPack("test_cards.txt");
+		assertEquals(32, cardValues.length, "Should have loaded 32 card values from test_cards.txt");
+
+		for (int i = 0; i < cardValues.length; i++) {
+			assertEquals(i + 1, cardValues[i], "Card " + (i + 1) + " should have value " + (i + 1));
+		}
+	}
+
+	@Test
 	@Timeout(5)	// Prevent the test from running forever, so fail after 5 seconds of the game running
 	void winningPlayerEndingHandCheck() {
 		// Setup means player 2 should discard all the 1s allowing player 1 to win
@@ -328,21 +339,120 @@ class CardGameTest {
 			}
 		}
 
-		// Check that the output log files contain the correct information
+		// Check that the output log files of player 1 contain the correct information
         try (BufferedReader reader = new BufferedReader(new FileReader("player1_output.txt"))) { 
             String line = reader.readLine();
-			assertTrue("First line should display the correct initial hand for player 1", line.trim() == "player 1 initial hand 1 1 1 4");
+			assertEquals("player 1 initial hand 1 1 1 4", line.trim(), "First line should display the correct initial hand for player 1");
 			
-			String lastLine = "";
-			while ((line = reader.readLine()) != null) {
-				lastLine = line;
-			}
+			int endIndex = 0;
+			boolean foundEnd = false;
 
-			assertTrue("Last line should display the correct ending hand for player 1", lastLine.trim() == "player 1 final hand: 1 1 1 1");
+			while ((line = reader.readLine()) != null) {
+				if (line.contains("wins")) foundEnd = true;
+
+				if (foundEnd) {
+					if (endIndex == 0) assertEquals("player 1 wins", line.trim(), "Player 1 should win");
+					if (endIndex == 1) assertEquals("player 1 exits", line.trim(), "Player 1 should exit");
+					if (endIndex == 2) assertEquals("player 1 final hand: 1 1 1 1", line.trim(), "Last line should display the correct ending hand for player 1");
+					endIndex++;
+				}
+			}
 			
 			reader.close();
         } catch (IOException e) {
             System.out.println(e.getMessage());
+			assertFalse("Player 1 output file could not be found", false);
+        }
+
+		// Check that the output log files of player 2 contain the correct information
+        try (BufferedReader reader = new BufferedReader(new FileReader("player2_output.txt"))) { 
+            String line = reader.readLine();
+			assertEquals("player 2 initial hand 1 6 7 8", line.trim(), "First line should display the correct initial hand for player 2");
+			
+			int endIndex = 0;
+			boolean foundEnd = false;
+
+			while ((line = reader.readLine()) != null) {
+				if (line.contains("won")) foundEnd = true;
+
+				if (foundEnd) {
+					if (endIndex == 0) assertEquals("player 1 has informed player 2 that player 1 has won", line.trim(), "Player 1 should have told player 2 that they won");
+					if (endIndex == 1) assertEquals("player 2 exits", line.trim(), "Player 2 should exit");
+					if (endIndex == 2) assertTrue("Last line should display the ending hand for player 2", line.trim().contains("player 2 final hand: "));
+					endIndex++;
+				}
+			}
+			
+			reader.close();
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+			assertFalse("Player 2 output file could not be found", false);
+        }
+	}
+
+	@Test
+	@Timeout(5)	// Prevent the test from running forever, so fail after 5 seconds of the game running
+	void playerDiscardDenominationCheck() {
+		int[] cardValues = new int[]{
+			// P1, P2
+			   1,  1,
+			   2,  6,
+			   3,  1,
+			   4,  2,
+			// D1, D2
+				9, 13,
+			    2, 14,
+			    1,  2,
+			   12,  1
+		};
+
+		// Total cards = 8 * player count
+		CardGame.distributeCards(cardValues, 2, 16);
+
+		// Run the game
+		CardGame.startGame();
+
+		// Wait for the players to finish the game
+		Player[] players = CardGame.getPlayers();
+
+		for (Player player : players) {
+			try {
+				player.join();
+			} catch (InterruptedException e) {
+				System.out.println("ERROR playerThreadsTerminatedCheck: Player join interrupted");
+			}
+		}
+
+		// Check that the output log files show that player 1 never discards a 1
+        try (BufferedReader reader = new BufferedReader(new FileReader("player1_output.txt"))) { 
+            String line;
+
+			while ((line = reader.readLine()) != null) {
+				if (line.contains("discards")) {
+					assertFalse("Player 1 should never discard a 1", line.substring(10).contains(" 1 "));
+				}
+			}
+			
+			reader.close();
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+			assertFalse("Player 1 output file could not be found", false);
+        }
+
+		// Check that the output log files show that player 2 never discards a 2
+        try (BufferedReader reader = new BufferedReader(new FileReader("player2_output.txt"))) { 
+            String line;
+
+			while ((line = reader.readLine()) != null) {
+				if (line.contains("discards")) {
+					assertFalse("Player 2 should never discard a 2", line.substring(10).contains(" 2 "));
+				}
+			}
+			
+			reader.close();
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+			assertFalse("Player 2 output file could not be found", false);
         }
 	}
 }

@@ -1,5 +1,5 @@
 import java.io.*;
-import java.nio.file.*;
+
 import java.util.InputMismatchException;
 import java.util.Random;
 import java.util.Scanner;
@@ -45,6 +45,10 @@ class CardDeck {
         TOTAL_DECKS = 0;
     }
 
+    public int getDeckId() {
+        return deckId;
+    }
+
     public Card getCard(int deckIndex) {
         return deckCards[(deckFrontPointer + deckIndex) % deckCards.length];
     }
@@ -88,40 +92,22 @@ class CardDeck {
         String contents = "deck" + deckId + " contents: ";
 
         for (int i = 0; i < deckCardsLength; i++) {
-            contents += this.getCard(i).getValue() + " ";
+            contents += this.getCard(i).getValue() + (i < deckCardsLength - 1 ? " " : "");
         }
 
         this.addLog(contents);
     }
 
     private void addLog(String message) {
-        
-        // Aqcuires the DeckOutputs directory 
-        Path logDir = Paths.get("DeckOutputs"); 
-        
-        try{
-            // Creates the DeckOutputs directory if it does not exist
-            Files.createDirectories(logDir);
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        }
-
         String logFileName = "deck" + deckId + "_output.txt";
 
-        File logFile = new File(logDir.toFile(), logFileName);
-
-
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(logFile))){
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(logFileName))){
             writer.write(message);
             writer.newLine();
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }
         
-    }
-
-    public int getDeckId() {
-        return deckId;
     }
 }
 
@@ -133,9 +119,10 @@ class Player extends Thread {
     
     private volatile boolean done = false;
 
+    private int winnerId = 0;
+
     private int playerId = 0;
     private static int TOTAL_PLAYERS = 0;
-
 
     public Player(int[] heldCardValues, CardDeck drawDeck, CardDeck discardDeck) {
         if (heldCardValues.length != 4) return;
@@ -150,13 +137,13 @@ class Player extends Thread {
         this.playerId = ++TOTAL_PLAYERS;
         this.clearLog();
 
-        String contents = " ";
+        String contents = "";
 
         for (int i = 0; i < 4; i++) {
-            contents += this.heldCards[i].getValue() + " ";
+            contents += this.heldCards[i].getValue() + (i < 3 ? " " : "");
         }
         
-        this.addLog("Player " + playerId + " initial hand: " + contents);
+        this.addLog("player " + playerId + " initial hand " + contents);
     }
 
     public void run() {
@@ -165,7 +152,22 @@ class Player extends Thread {
 
         // Run the game loop
         while (!done) takeTurn();
-        System.out.println("Player " + playerId + " thread ended");
+
+        // Log who told / if the player won
+        if (winnerId == playerId) this.addLog("player " + playerId + " wins");
+        else this.addLog("player " + winnerId + " has informed player " + playerId + " that player " + winnerId + " has won");
+
+        // Log the fact that the player has ended the game playing loop
+        this.addLog("player " + playerId + " exits");
+
+        // Log the current player's hand
+        String contents = "";
+
+        for (int i = 0; i < 4; i++) {
+            contents += this.heldCards[i].getValue() + (i < 3 ? " " : "");
+        }
+        
+        this.addLog("player " + playerId + " final hand: " + contents);
     }
 
     public static void resetCounter() {
@@ -211,7 +213,7 @@ class Player extends Thread {
             if (done) return;
         }
 
-        String drawmessage = "Player " + playerId + " draws a " + drawCard.getValue() + " from deck " + drawDeck.getDeckId();
+        String drawmessage = "player " + playerId + " draws a " + drawCard.getValue() + " from deck " + drawDeck.getDeckId();
         this.addLog(drawmessage);
 
         // Pick random card to discard
@@ -223,7 +225,7 @@ class Player extends Thread {
             randomCard = rand.nextInt(4);
         }
 
-        String discardmessage = "Player " + playerId + " discards a " + heldCards[randomCard].getValue() + " to deck " + discardDeck.getDeckId();
+        String discardmessage = "player " + playerId + " discards a " + heldCards[randomCard].getValue() + " to deck " + discardDeck.getDeckId();
         this.addLog(discardmessage);
 
         // Add the card to the discard deck
@@ -232,19 +234,17 @@ class Player extends Thread {
         // Replace the card in the player's hand
         heldCards[randomCard] = drawCard;
 
+        // Log the current player's hand
+        String contents = "";
+
+        for (int i = 0; i < 4; i++) {
+            contents += this.heldCards[i].getValue() + (i < 3 ? " " : "");
+        }
+        
+        this.addLog("player " + playerId + " current hand: " + contents);
+
         // Check if player has won
         this.checkIfWon();
-    }
-
-    private void clearLog(){
-        String logFileName = "player" + playerId + "_output.txt";
-
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(logFileName, false))){ 
-            writer.write("");
-        } catch (IOException e) {
-            System.out.println(e.getMessage());
-        }
-
     }
     
     private void checkIfWon(){
@@ -264,6 +264,7 @@ class Player extends Thread {
     }
 
     public void stopPlayer(int winnerId) {
+        this.winnerId = winnerId;
         done = true;
     }
 
@@ -274,6 +275,17 @@ class Player extends Thread {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(logFileName, true))){ 
             writer.write(message);
             writer.newLine();
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+        }
+
+    }
+
+    private void clearLog(){
+        String logFileName = "player" + playerId + "_output.txt";
+
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(logFileName, false))){ 
+            writer.write("");
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }
@@ -402,7 +414,7 @@ public class CardGame {
         if (gameFinished) return;
         gameFinished = true;
 
-        System.out.println("Player " + playerId + " has won the game!");
+        System.out.println("player " + playerId + " wins");
 
         // Stop all other player threads
         for (Player p : PLAYERS) {
@@ -415,7 +427,7 @@ public class CardGame {
         }
     }
 
-    private static int[] readPack(String packLocation) {
+    public static int[] readPack(String packLocation) {
 
         String packContents = "";
 
