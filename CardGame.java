@@ -119,6 +119,10 @@ class CardDeck {
         }
         
     }
+
+    public int getDeckId() {
+        return deckId;
+    }
 }
 
 class Player extends Thread {
@@ -146,6 +150,13 @@ class Player extends Thread {
         this.playerId = ++TOTAL_PLAYERS;
         this.clearLog();
 
+        String contents = " ";
+
+        for (int i = 0; i < 4; i++) {
+            contents += this.heldCards[i].getValue() + " ";
+        }
+        
+        this.addLog("Player " + playerId + " initial hand: " + contents);
     }
 
     public void run() {
@@ -200,7 +211,7 @@ class Player extends Thread {
             if (done) return;
         }
 
-        String drawmessage = "Player " + playerId + " draws a " + drawCard.getValue();
+        String drawmessage = "Player " + playerId + " draws a " + drawCard.getValue() + " from deck " + drawDeck.getDeckId();
         this.addLog(drawmessage);
 
         // Pick random card to discard
@@ -212,7 +223,7 @@ class Player extends Thread {
             randomCard = rand.nextInt(4);
         }
 
-        String discardmessage = "Player " + playerId + " discards a " + heldCards[randomCard].getValue();
+        String discardmessage = "Player " + playerId + " discards a " + heldCards[randomCard].getValue() + " to deck " + discardDeck.getDeckId();
         this.addLog(discardmessage);
 
         // Add the card to the discard deck
@@ -262,7 +273,6 @@ class Player extends Thread {
 
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(logFileName, true))){ 
             writer.write(message);
-            writer.newLine();
             writer.newLine();
         } catch (IOException e) {
             System.out.println(e.getMessage());
