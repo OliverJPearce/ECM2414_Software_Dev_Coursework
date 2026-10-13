@@ -1,5 +1,12 @@
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -288,4 +295,54 @@ class CardGameTest {
 		}
 	}
 	
+	@Test
+	@Timeout(5)	// Prevent the test from running forever, so fail after 5 seconds of the game running
+	void playerOutputFileContentsCheck() {
+		int[] cardValues = new int[]{
+			// P1, P2
+			   1,  1,
+			   1,  6,
+			   1,  7,
+			   4,  8,
+			// D1, D2
+				9, 13,
+			   10, 14,
+			   11, 15,
+			   12, 16
+		};
+
+		// Total cards = 8 * player count
+		CardGame.distributeCards(cardValues, 2, 16);
+
+		// Run the game
+		CardGame.startGame();
+
+		// Wait for the players to finish the game
+		Player[] players = CardGame.getPlayers();
+
+		for (Player player : players) {
+			try {
+				player.join();
+			} catch (InterruptedException e) {
+				System.out.println("ERROR playerThreadsTerminatedCheck: Player join interrupted");
+			}
+		}
+
+		// Check that the output log files contain the correct information
+        try (BufferedReader reader = new BufferedReader(new FileReader("player1_output.txt"))) { 
+            String line = reader.readLine();
+			assertTrue("First line should display the correct initial hand for player 1", line.trim() == "player 1 initial hand 1 1 1 4");
+			
+			String lastLine = "";
+			while ((line = reader.readLine()) != null) {
+				lastLine = line;
+			}
+
+			assertTrue("Last line should display the correct ending hand for player 1", lastLine.trim() == "player 1 final hand: 1 1 1 1");
+			
+			reader.close();
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+        }
+	}
 }
