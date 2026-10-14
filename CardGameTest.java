@@ -63,7 +63,7 @@ class CardGameTest {
 	}
 
 	@Test
-	void playerStartingHandsCheck() {
+	void testDistributeCardsPlayerHands() {
 		int[] cardValues = new int[]{
 			// P1, P2
 			   1,  5,
@@ -93,7 +93,7 @@ class CardGameTest {
 	}
 
 	@Test
-	void deckStartingCardsCheck() {
+	void testDistributeCardsDeckContents() {
 		int[] cardValues = new int[]{
 			// P1, P2
 			   1,  5,
@@ -123,7 +123,7 @@ class CardGameTest {
 	}
 
 	@Test
-	void cardDeckDrawCardCheck() {
+	void testCardDeckDrawCard() {
 		int[] cardValues = new int[]{1,2,3,4};
 		CardDeck cardDeck = new CardDeck(10, cardValues);
 
@@ -140,7 +140,7 @@ class CardGameTest {
 	}
 
 	@Test
-	void cardDeckDiscardCardCheck() {
+	void testCardDeckAddCard() {
 		int[] cardValues = new int[]{1,2,3,4};
 		CardDeck cardDeck = new CardDeck(10, cardValues);
 
@@ -174,9 +174,15 @@ class CardGameTest {
 	}
 
 	@Test
-	void invalidInputCheck() {
+	void testCardGameReadPack() {
 		int[] noCardValues = CardGame.readPack("invalid_location.txt");
 		assertEquals(null, noCardValues, "Card values should be null since the pack invalid_location.txt doesn't exist");
+
+		int[] badNegativeCardValues = CardGame.readPack("test_cards_negative_value.txt");
+		assertEquals(null, badNegativeCardValues, "Card values should be null since the pack test_cards_negative_value.txt contains a negative card value");
+
+		int[] badFormattingCardValues = CardGame.readPack("test_cards_bad_formatting.txt");
+		assertEquals(null, badFormattingCardValues, "Card values should be null since the pack test_cards_bad_formatting.txt is not formatted correctly");
 
 		int[] cardValues = CardGame.readPack("test_cards.txt");
 		assertEquals(32, cardValues.length, "Should have loaded 32 card values from test_cards.txt");

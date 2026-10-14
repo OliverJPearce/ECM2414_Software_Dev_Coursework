@@ -448,6 +448,12 @@ public class CardGame {
         try {
             for (int i = 0; i < cardValuesStr.length; i++) {
                 cardValues[i] = Integer.parseInt(cardValuesStr[i].trim());
+
+                // Check that the card value is non-negative
+                if (cardValues[i] < 0) {
+                    System.out.println("ERROR: Pack cannot have a negative card value");
+                    return null;
+                }
             }
         } catch (NumberFormatException e) {
             System.out.println("ERROR: File contains non-integer values");
