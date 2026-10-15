@@ -36,7 +36,7 @@ class CardGameTest {
 	}
 
 	@Test
-	void playerInitialisedCheck() {
+	void testPlayerInitialisation() {
 		int[] cardValues = new int[]{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
 
 		// Total cards = 8 * player count
@@ -48,7 +48,7 @@ class CardGameTest {
 	}
 
 	@Test
-	void deckInitialisedCheck() {
+	void testDeckInitialisation() {
 		int[] cardValues = new int[]{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
 
 		// Total cards = 8 * player count
@@ -154,7 +154,7 @@ class CardGameTest {
 	}
 
 	@Test
-	void cardDeckFIFOOrderingCheck() {
+	void testCardDeckFIFOOrdering() {
 		int[] cardValues = new int[]{1,2,3,4};
 		CardDeck cardDeck = new CardDeck(10, cardValues);
 
@@ -181,6 +181,9 @@ class CardGameTest {
 		int[] badNegativeCardValues = CardGame.readPack("test_cards_negative_value.txt");
 		assertEquals(null, badNegativeCardValues, "Card values should be null since the pack test_cards_negative_value.txt contains a negative card value");
 
+		int[] badFloatCardValues = CardGame.readPack("test_cards_float_value.txt");
+		assertEquals(null, badFloatCardValues, "Card values should be null since the pack test_cards_float_value.txt contains a non-integer value");
+
 		int[] badFormattingCardValues = CardGame.readPack("test_cards_bad_formatting.txt");
 		assertEquals(null, badFormattingCardValues, "Card values should be null since the pack test_cards_bad_formatting.txt is not formatted correctly");
 
@@ -194,7 +197,7 @@ class CardGameTest {
 
 	@Test
 	@Timeout(5)	// Prevent the test from running forever, so fail after 5 seconds of the game running
-	void winningPlayerEndingHandCheck() {
+	void testWinningPlayerEndingHand() {
 		// Setup means player 2 should discard all the 1s allowing player 1 to win
 		int[] cardValues = new int[]{
 			// P1, P2
@@ -235,7 +238,7 @@ class CardGameTest {
 
 	@Test
 	@Timeout(5)	// Prevent the test from running forever, so fail after 5 seconds of the game running
-	void cardStabilityCheck() {
+	void testCardStability() {
 		int[] cardValues = new int[]{
 			// P1, P2
 			   1,  1,
@@ -275,7 +278,7 @@ class CardGameTest {
 
 	@Test
 	@Timeout(5)	// Prevent the test from running forever, so fail after 5 seconds of the game running
-	void playerThreadsTerminatedCheck() {
+	void testPlayerThreadsTerminate() {
 		int[] cardValues = new int[]{
 			// P1, P2
 			   1,  1,
@@ -314,7 +317,7 @@ class CardGameTest {
 	
 	@Test
 	@Timeout(5)	// Prevent the test from running forever, so fail after 5 seconds of the game running
-	void playerOutputFileContentsCheck() {
+	void testPlayerOutputFileContents() {
 		int[] cardValues = new int[]{
 			// P1, P2
 			   1,  1,
@@ -398,7 +401,7 @@ class CardGameTest {
 
 	@Test
 	@Timeout(5)	// Prevent the test from running forever, so fail after 5 seconds of the game running
-	void playerDiscardDenominationCheck() {
+	void testPlayerDiscardDenomination() {
 		int[] cardValues = new int[]{
 			// P1, P2
 			   1,  1,
