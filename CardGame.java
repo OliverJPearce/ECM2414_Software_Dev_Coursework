@@ -1,5 +1,4 @@
 import java.io.*;
-
 import java.util.InputMismatchException;
 import java.util.Random;
 import java.util.Scanner;
@@ -136,14 +135,8 @@ class Player extends Thread {
 
         this.playerId = ++TOTAL_PLAYERS;
         this.clearLog();
-
-        String contents = "";
-
-        for (int i = 0; i < 4; i++) {
-            contents += this.heldCards[i].getValue() + (i < 3 ? " " : "");
-        }
         
-        this.addLog("player " + playerId + " initial hand " + contents);
+        this.addLog("player " + playerId + " initial hand " + this.getPlayerHand());
     }
 
     public void run() {
@@ -161,13 +154,17 @@ class Player extends Thread {
         this.addLog("player " + playerId + " exits");
 
         // Log the current player's hand
+        this.addLog("player " + playerId + " final hand: " + this.getPlayerHand());
+    }
+
+    private String getPlayerHand() {
         String contents = "";
 
         for (int i = 0; i < 4; i++) {
             contents += this.heldCards[i].getValue() + (i < 3 ? " " : "");
         }
-        
-        this.addLog("player " + playerId + " final hand: " + contents);
+
+        return contents;
     }
 
     public static void resetCounter() {
@@ -235,13 +232,7 @@ class Player extends Thread {
         heldCards[randomCard] = drawCard;
 
         // Log the current player's hand
-        String contents = "";
-
-        for (int i = 0; i < 4; i++) {
-            contents += this.heldCards[i].getValue() + (i < 3 ? " " : "");
-        }
-        
-        this.addLog("player " + playerId + " current hand: " + contents);
+        this.addLog("player " + playerId + " current hand: " + this.getPlayerHand());
 
         // Check if player has won
         this.checkIfWon();
