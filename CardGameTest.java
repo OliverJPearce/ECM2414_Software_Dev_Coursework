@@ -274,6 +274,45 @@ class CardGameTest {
 		int totalCards = cardDecks[0].getDeckSize() + cardDecks[1].getDeckSize() + 4 + 4;
 
 		assertEquals(16, totalCards, "The total cards at the end of the game should be the same as at the start");
+
+		// Get all the card values from the 2 players and 2 card decks
+		int[] endGameCardValues = new int[16];
+		
+		int insertIndex = 0;
+		for (int i = 0; i < cardDecks[0].getDeckSize(); i++) {
+			endGameCardValues[insertIndex] = cardDecks[0].getCard(i).getValue();
+			insertIndex++;
+		}
+
+		for (int i = 0; i < cardDecks[1].getDeckSize(); i++) {
+			endGameCardValues[insertIndex] = cardDecks[1].getCard(i).getValue();
+			insertIndex++;
+		}
+
+		for (int i = 0; i < 4; i++) {
+			endGameCardValues[insertIndex] = players[0].getCard(i).getValue();
+			insertIndex++;
+		}
+
+		for (int i = 0; i < 4; i++) {
+			endGameCardValues[insertIndex] = players[1].getCard(i).getValue();
+			insertIndex++;
+		}
+
+		// Check that the card values match the setup card values
+		for (int cardValue : cardValues) {
+
+			// Check that the start card value exists in the end card values
+			boolean isInEndValues = false;
+			for (int endValue : endGameCardValues) {
+				if (cardValue == endValue) {
+					isInEndValues = true;
+					break;
+				}
+			}
+
+			assertTrue("Card should exist and maintain the same value throughout the entire game", isInEndValues);
+		}
 	}
 
 	@Test
