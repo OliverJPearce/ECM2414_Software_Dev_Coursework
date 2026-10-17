@@ -154,7 +154,8 @@ class Player extends Thread {
         this.addLog("player " + playerId + " exits");
 
         // Log the current player's hand
-        this.addLog("player " + playerId + " final hand: " + this.getPlayerHand());
+        if (winnerId == playerId) this.addLog("player " + playerId + " final hand: " + this.getPlayerHand());
+        else this.addLog("player " + playerId + " hand: " + this.getPlayerHand());
     }
 
     private String getPlayerHand() {

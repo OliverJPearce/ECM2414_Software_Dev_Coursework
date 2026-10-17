@@ -426,7 +426,7 @@ class CardGameTest {
 				if (foundEnd) {
 					if (endIndex == 0) assertEquals("player 1 has informed player 2 that player 1 has won", line.trim(), "Player 1 should have told player 2 that they won");
 					if (endIndex == 1) assertEquals("player 2 exits", line.trim(), "Player 2 should exit");
-					if (endIndex == 2) assertTrue("Last line should display the ending hand for player 2", line.trim().contains("player 2 final hand: "));
+					if (endIndex == 2) assertTrue("Last line should display the ending hand for player 2", line.trim().contains("player 2 hand: "));
 					endIndex++;
 				}
 			}
