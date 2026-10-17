@@ -232,7 +232,7 @@ class Player extends Thread {
         heldCards[randomCard] = drawCard;
 
         // Log the current player's hand
-        this.addLog("player " + playerId + " current hand: " + this.getPlayerHand());
+        this.addLog("player " + playerId + " current hand is " + this.getPlayerHand());
 
         // Check if player has won
         this.checkIfWon();
@@ -313,8 +313,11 @@ public class CardGame {
                 }
 
             } catch (InputMismatchException e) {
-                System.out.println("ERROR: Number of players entered was not in the correct format, please try again");
+                System.out.println("ERROR: Number of players entered was not an integer, please try again");
                 isValidInput = false;
+
+                // Clear invalid input from scanner
+                scanner.next();
             }
         }
 
